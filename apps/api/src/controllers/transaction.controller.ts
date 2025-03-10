@@ -1,6 +1,6 @@
 import { responseError } from "@/helpers/resError";
 import prisma from "@/prisma";
-import { EventData } from "@/types/transaction.types";
+import { EventData, EventGroupBy, TransactionWithUser } from "@/types/transaction.types";
 import { Prisma } from "@prisma/client";
 import { Request, Response } from "express";
 
@@ -286,7 +286,7 @@ export class TransactionController {
     
             const eventIds = events.map((event) => event.id);
     
-            const transaction = await prisma.transaction.findMany({
+            const transaction: TransactionWithUser[] = await prisma.transaction.findMany({
                 where: {
                     eventId: { in: eventIds },
                     status: 'waitingConfirmation'
@@ -350,8 +350,8 @@ export class TransactionController {
                 totalSuccessTransaction: result.length,
                 totalActiveEvents: activeEvents.length,
                 totalNonActiveEvents: nonActiveEvents.length,
-                totalTicketTerjual: paidTransactions.reduce((total, event) => total + (event._sum.quantity || 0), 0),
-                totalPenjualan: paidTransactions.reduce((total: number, event) => total + (event._sum.grandTotal || 0), 0),
+                totalTicketTerjual: paidTransactions.reduce((total: number, event: EventGroupBy) => total + (event._sum.quantity || 0), 0),
+                totalPenjualan: paidTransactions.reduce((total: number, event: EventGroupBy) => total + (event._sum.grandTotal || 0), 0),
                 transaction,
                 activeEvents,
                 nonActiveEvents,
