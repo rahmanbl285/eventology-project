@@ -1,10 +1,16 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Roboto } from 'next/font/google';
 import './globals.css';
+import { UserContextProvider } from './userContext';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { StoreProvider } from './storeProvider';
+import { Toaster } from 'react-hot-toast';
 
-const inter = Inter({ subsets: ['latin'] });
+const roboto = Roboto({
+  subsets: ['latin'],
+  weight: '400'
+});
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -13,16 +19,21 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
+    <StoreProvider>
     <html lang="en">
-      <body className={inter.className}>
-        <Header />
-        {children}
-        <Footer />
+      <body className={roboto.className}>
+        <UserContextProvider>
+          <Toaster/>
+          <Header />
+          {children}
+          <Footer />
+        </UserContextProvider>
       </body>
     </html>
+    </StoreProvider>
   );
 }

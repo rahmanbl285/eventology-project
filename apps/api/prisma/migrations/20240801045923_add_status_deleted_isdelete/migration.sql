@@ -1,0 +1,9 @@
+/*
+  Warnings:
+
+  - You are about to drop the column `isDeleted` on the `users` table. All the data in the column will be lost.
+
+*/
+-- AlterTable
+ALTER TABLE `users` DROP COLUMN `isDeleted`,
+    ADD COLUMN `status` ENUM('INACTIVE', 'ACTIVE', 'DELETED') NOT NULL DEFAULT 'INACTIVE';

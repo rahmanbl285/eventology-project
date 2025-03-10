@@ -19,3 +19,156 @@ model Sample {
 
   @@map("samples") // if you want to use snake_case format
 }
+
+enum Categories {
+  Festival
+  Konser
+  Pertandingan
+  Pameran
+  Konferensi
+  Workshop
+  Pertunjukan
+  Seminar
+}
+
+enum Status {
+  waitingPayment
+  waitingConfirmation
+  paid
+  cancelled
+  declined
+}
+
+enum UserStatus {
+  INACTIVE
+  ACTIVE
+  DEACTIVATE
+}
+
+enum ReferralStatus {
+  INACTIVE
+  ACTIVE
+}
+
+model Users {
+  id           Int           @id @default(autoincrement())
+  name         String
+  username     String        @unique
+  email        String        @unique
+  password     String
+  image        String?       @db.LongText
+  isActive     Boolean       @default(false)
+  isOrganizer  Boolean       @default(false)
+  status       UserStatus    @default(INACTIVE)
+  createdAt    DateTime      @default(now())
+  deactivateAt DateTime?
+  Referral     Referral?
+  Events       Events[]
+  Points       Points[]
+  Discounts    Discounts[]
+  Transaction  Transaction[]
+}
+
+model Referral {
+  id             Int            @id @default(autoincrement())
+  usersId        Int            @unique
+  myReferralCode String         @unique
+  referralStatus ReferralStatus @default(ACTIVE)
+  users          Users          @relation(fields: [usersId], references: [id])
+}
+
+model Points {
+  id            Int           @id @default(autoincrement())
+  amount        Int
+  expiredPoints DateTime
+  usersId       Int           @unique
+  users         Users         @relation(fields: [usersId], references: [id])
+  Transaction   Transaction[]
+}
+
+model Discounts {
+  id              Int           @id @default(autoincrement())
+  discount        Int
+  expiredDiscount DateTime
+  usersId         Int           @unique
+  users           Users         @relation(fields: [usersId], references: [id])
+  Transaction     Transaction[]
+}
+
+model Events {
+  id          Int           @id @default(autoincrement())
+  usersId     Int
+  title       String
+  startDate   DateTime
+  endDate     DateTime
+  image       String        @db.LongText
+  description String        @db.LongText
+  slug        String?
+  address     String
+  city        String
+  category    Categories
+  createdAt   DateTime      @default(now())
+  users       Users         @relation(fields: [usersId], references: [id])
+  Tickets     Tickets[]
+  Transaction Transaction[]
+  EventPromo  EventPromo[]
+}
+
+model EventPromo {
+  id       Int    @id @default(autoincrement())
+  eventsId Int
+  promoId  Int
+  events   Events @relation(fields: [eventsId], references: [id])
+  promo    Promo  @relation(fields: [promoId], references: [id])
+}
+
+model Promo {
+  id          Int           @id @default(autoincrement())
+  PromoItems  PromoItems[]
+  Transaction Transaction[]
+  EventPromo  EventPromo[]
+}
+
+model PromoItems {
+  id        Int      @id @default(autoincrement())
+  promoId   Int
+  name      String
+  discount  Int
+  startDate DateTime
+  endDate   DateTime
+  promo     Promo    @relation(fields: [promoId], references: [id])
+}
+
+model Tickets {
+  id            Int      @id @default(autoincrement())
+  eventsId      Int
+  type          String
+  isPaid        Boolean  @default(false)
+  availableSeat Int
+  price         Int
+  startSaleDate DateTime
+  endSaleDate   DateTime
+  events        Events   @relation(fields: [eventsId], references: [id])
+}
+
+model Transaction {
+  id           Int        @id @default(autoincrement())
+  eventId      Int
+  usersId      Int
+  discountId   Int?
+  pointsId     Int?
+  promoId      Int?
+  quantity     Int
+  usedDiscount Int?
+  usedPoint    Int?
+  usedPromo    Int?
+  total        Int
+  grandTotal   Int
+  status       Status
+  createdAt    DateTime   @default(now())
+  events       Events     @relation(fields: [eventId], references: [id])
+  users        Users      @relation(fields: [usersId], references: [id])
+  discounts    Discounts? @relation(fields: [discountId], references: [id])
+  points       Points?    @relation(fields: [pointsId], references: [id])
+  promo        Promo?     @relation(fields: [promoId], references: [id])
+}
