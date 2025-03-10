@@ -1,6 +1,7 @@
 import { responseError } from "@/helpers/resError";
 import prisma from "@/prisma";
 import { EventData } from "@/types/transaction.types";
+import { Prisma } from "@prisma/client";
 import { Request, Response } from "express";
 
 export class TransactionController {
@@ -23,7 +24,7 @@ export class TransactionController {
                 where: { usersId: userId, expiredDiscount: { gte: new Date() } }
             });
     
-            const transactionResult = await prisma.$transaction(async (tx) => {
+            const transactionResult = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
                 let grandTotal = 0;
                 let transactionIds: number[] = []; 
     
@@ -147,7 +148,7 @@ export class TransactionController {
         }
     
         try {
-            const transactionResults = await prisma.$transaction(async (tx) => {
+            const transactionResults = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
                 const transactions = await tx.transaction.findMany({
                     where: { id: { in: transactionIds }, usersId: userId }
                 });
@@ -186,7 +187,7 @@ export class TransactionController {
         const { transactionId, isConfirmed } = req.body
         const userId = req.users?.id
         try {
-            const transactionResult = await prisma.$transaction(async(tx) => {
+            const transactionResult = await prisma.$transaction(async(tx: Prisma.TransactionClient) => {
                 const transaction = await tx.transaction.findUnique({
                     where: { id: transactionId },
                     include: {
@@ -272,7 +273,7 @@ export class TransactionController {
         try {
             const today = new Date();
     
-            const events = await prisma.events.findMany({
+            const events: EventData[] = await prisma.events.findMany({
                 where: { usersId: userId, NOT: {
                     slug: { startsWith: 'deleted-' }
                 } },
@@ -283,7 +284,7 @@ export class TransactionController {
                 throw new Error("No events found for this admin");
             }
     
-            const eventIds = events.map(event => event.id);
+            const eventIds = events.map((event) => event.id);
     
             const transaction = await prisma.transaction.findMany({
                 where: {
@@ -350,7 +351,7 @@ export class TransactionController {
                 totalActiveEvents: activeEvents.length,
                 totalNonActiveEvents: nonActiveEvents.length,
                 totalTicketTerjual: paidTransactions.reduce((total, event) => total + (event._sum.quantity || 0), 0),
-                totalPenjualan: paidTransactions.reduce((total, event) => total + (event._sum.grandTotal || 0), 0),
+                totalPenjualan: paidTransactions.reduce((total: number, event) => total + (event._sum.grandTotal || 0), 0),
                 transaction,
                 activeEvents,
                 nonActiveEvents,
