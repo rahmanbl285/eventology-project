@@ -6,25 +6,20 @@ import { formatToIDR } from '@/helpers/formatPrice';
 import { IoFilter } from 'react-icons/io5';
 import Link from 'next/link';
 import { GetEventOrderSummary } from '@/lib/transaction';
+import Tabs from '../_components/tabs';
 
 export default function EventDashboard() {
-  const [activeTab, setActiveTab] = useState<'active' | 'nonactive'>('active');
+  const [activeTab, setActiveTab] = useState<'active' | 'nonactive'>('active');  
   const [activeEvents, setActiveEvents] = useState<any[]>([]);
   const [nonActiveEvents, setNonActiveEvents] = useState<any[]>([]);
   const [sortOrder, setSortOrder] = useState<'nearest' | 'farthest'>('nearest');
 
   useEffect(() => {
     const fetchEvent = async () => {
-      try {
         const data = await GetEventOrderSummary();
-        console.log('get event sum', data);
-        
-        
         setActiveEvents(data?.activeEvents || []);
         setNonActiveEvents(data?.nonActiveEvents || []);
-      } catch (err) {
-        console.error('Error Fetching Data: ', err);
-      }
+
     };
     fetchEvent();
   }, []);
@@ -43,29 +38,18 @@ export default function EventDashboard() {
 
   return (
     <div className="p-5 bg-black text-white">
-      <div role="tablist" className="tabs tabs-lifted mb-4">
-        <button
-          className={`tab ${activeTab === 'active' ? 'tab-active' : ''} text-white [--tab-bg:#E50914] [--tab-border-color:#E50914]`}
-          onClick={() => setActiveTab('active')}
-        >
-          Active Event
-        </button>
-        <button
-          className={`tab ${activeTab === 'nonactive' ? 'tab-active' : ''} text-white [--tab-bg:#E50914] [--tab-border-color:#E50914]`}
-          onClick={() => setActiveTab('nonactive')}
-        >
-          Non-Active Event
-        </button>
-      </div>
-
-      {/* Sort Dropdown */}
+      <Tabs
+        activeTab={activeTab}
+        setActiveTab={(tab) => setActiveTab(tab as "active" | "nonactive")}
+        tabs={[
+          { key: 'active', label: 'Active Event' },
+          { key: 'nonactive', label: 'Non-Active Event' },
+        ]}
+      />
 
       <div className="flex justify-end mb-2">
         <div className="relative">
-          {/* Icon Filter */}
           <IoFilter className="absolute left-2 top-1/2 transform -translate-y-1/2 text-white text-lg" />
-
-          {/* Select Dropdown */}
           <select
             className="select select-xs select-bordered bg-black rounded-sm text-white pl-8"
             value={sortOrder}
@@ -79,7 +63,6 @@ export default function EventDashboard() {
         </div>
       </div>
 
-      {/* Table */}
       <div className="overflow-x-auto">
         <table className="table table-xs">
           <thead className="text-white">
@@ -101,7 +84,6 @@ export default function EventDashboard() {
                   event[sortByDateField],
                   true,
                 );
-                console.log('event total penjualan', event);
                 
                 return (
                   <tr key={event.id}>

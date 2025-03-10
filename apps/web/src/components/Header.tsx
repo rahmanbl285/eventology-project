@@ -17,14 +17,12 @@ import { SwitchIsOrganizer } from '@/lib/user';
 import toast from 'react-hot-toast';
 
 export const Header = () => {
-  const userContext = useContext(UserContext);
-
-  if (!userContext) {
-    return null; // atau handle jika UserContext tidak tersedia
-  }
-
-  const { userInfo, setUserInfo } = userContext;
   const pathname = usePathname();
+  const userContext = useContext(UserContext);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isBurger, setIsBurger] = useState(false);
+  const [isLogin, setIsLogin] = useState(false);
+  const [loading, setLoading] = useState(false);
   const hideHeadersOnPaths = [
     '/create-event',
     '/login',
@@ -34,10 +32,6 @@ export const Header = () => {
     '/settings',
     '/checkout',
   ];
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isBurger, setIsBurger] = useState(false);
-  const [isLogin, setIsLogin] = useState(false);
-  const [isOrganizer, setIsOrganizer] = useState(false);
   const handleLogout = () => {
     Cookies.remove('token');
     localStorage.removeItem('token');
@@ -45,13 +39,12 @@ export const Header = () => {
     setIsLogin(false);
     window.location.reload();
   };
-  const [loading, setLoading] = useState(false);
+
 
   const handleSwitchOrganizer = async () => {
     try {
       setLoading(true);
       const result = await SwitchIsOrganizer();
-      console.log('API Response:', result); 
 
       if (result?.status === 'OK') {
         setUserInfo((prev) =>
@@ -90,6 +83,12 @@ export const Header = () => {
 
   if (hideHeadersOnPaths.some((path) => pathname.startsWith(path))) return null;
 
+  if (!userContext) {
+    return null;
+  }
+
+  const { userInfo, setUserInfo } = userContext;
+
   return (
     <>
       <Head>
@@ -115,12 +114,21 @@ export const Header = () => {
             >
               explore
             </Link>
-            <Link
-              href={'/create-event'}
-              className="text-white py-1 px-2 tracking-wider"
-            >
-              create event
-            </Link>
+            {userInfo?.isOrganizer ? (
+              <Link
+                href={'/create-event'}
+                className="text-white py-1 px-2 tracking-wider"
+              >
+                create event
+              </Link>
+            ) : (
+              <Link
+                href={'/dashboard/tickets'}
+                className="text-white py-1 px-2 tracking-wider"
+              >
+                my tiket
+              </Link>
+            )}
           </div>
           <div className="hidden md:flex gap-5">
             {isLogin ? (
@@ -251,12 +259,22 @@ export const Header = () => {
               {isLogin ? (
                 <div className="flex flex-col gap-3 tracking-widest">
                   <div className="flex w-full gap-5 justify-evenly text-center">
-                    <Link
-                      href={'/create-event'}
-                      className="bg-gold text-white rounded-sm py-2 w-1/2"
-                    >
-                      create event
-                    </Link>
+                    {userInfo?.isOrganizer ? (
+                      <Link
+                        href={'/create-event'}
+                        className="bg-gold text-white rounded-sm py-2 w-1/2"
+                      >
+                        create event
+                      </Link>
+                    ) : (
+                      <Link
+                        href={'/dashboard/tickets'}
+                        className="bg-gold text-white rounded-sm py-2 w-1/2"
+                      >
+                        my tiket
+                      </Link>
+                    )}
+
                     <Link
                       href={'/explore'}
                       className="bg-gold text-white rounded-sm py-2 w-1/2"

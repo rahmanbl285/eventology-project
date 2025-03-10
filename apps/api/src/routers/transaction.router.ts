@@ -19,6 +19,7 @@ export class TransactionRouter {
         this.router.post('/create-payment/:transactionIds', this.usersMiddleware.verifyToken, this.transactionController.createPayment)
         this.router.post('/confirm-order', this.usersMiddleware.verifyToken, this.transactionController.confirmOrder)
         this.router.get('/event-order-sum', this.usersMiddleware.verifyToken, this.transactionController.getEventOrderSummary)
+        this.router.get('/transaction-result', this.usersMiddleware.verifyToken, this.transactionController.getUserOrderSummary)
         this.router.get('/:transactionIds', this.usersMiddleware.verifyToken, this.transactionController.getTransaction)
     }
 

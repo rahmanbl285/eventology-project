@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 export default function LayoutCheckout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const SESSION_EXPIRATION_TIME = 24 * 60 * 60 * 1000;
+  const SESSION_EXPIRATION_TIME = useMemo(() => 24 * 60 * 60 * 1000, [] ) ;
   const [timeLeft, setTimeLeft] = useState<number>(SESSION_EXPIRATION_TIME);
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export default function LayoutCheckout({
     } else {
       setTimeLeft(0);
     }
-  }, []); 
+  }, [SESSION_EXPIRATION_TIME]); 
 
   const formatTime = (timeInMs: number) => {
     const hours = Math.floor((timeInMs / (1000 * 60 * 60)) % 24);

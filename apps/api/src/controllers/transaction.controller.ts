@@ -15,7 +15,6 @@ export class TransactionController {
                 });
             }
     
-            // Fetch user points and discount
             const points = await prisma.points.findUnique({
                 where: { usersId: userId, expiredPoints: { gte: new Date() } }
             });
@@ -28,7 +27,6 @@ export class TransactionController {
                 let grandTotal = 0;
                 let transactionIds: number[] = []; 
     
-                // Loop untuk setiap tiket yang dipesan
                 for (let i = 0; i < tickets.length; i++) {
                     const { type, quantity, price } = tickets[i];
     
@@ -44,15 +42,13 @@ export class TransactionController {
                     const ticketDiscount = total * (usedDiscount ?? 0) / 100;
                     const ticketGrandTotal = total - ticketDiscount;
     
-                    grandTotal += ticketGrandTotal; // Akumulasi total transaksi
-    
-                    // Update jumlah kursi yang tersedia
+                    grandTotal += ticketGrandTotal; 
+
                     await tx.tickets.update({
                         where: { id: ticket.id },
                         data: { availableSeat: ticket.availableSeat - quantity }
                     });
     
-                    // Buat transaksi untuk tiket ini
                     const transaction = await tx.transaction.create({
                         data: {
                             eventId: eventsId,
@@ -71,7 +67,6 @@ export class TransactionController {
                     transactionIds.push(transaction.id);
                 }
     
-                // Setelah semua tiket diproses, kurangi total points yang digunakan
                 if (usedPoint) {
                     if (!points || points.amount < usedPoint) {
                         throw 'Insufficient points.'
@@ -82,7 +77,6 @@ export class TransactionController {
                     });
                 }
     
-                // Kurangi discount yang digunakan (pastikan tidak negatif)
                 if (usedDiscount) {
                     if (!discount || discount.discount < usedDiscount) {
                         throw 'Insufficient discount.'
@@ -231,6 +225,42 @@ export class TransactionController {
             return res.status(201).json({
                 message: `Payment ${isConfirmed ? 'confirmed' : 'declined'}, order is now ${isConfirmed ? 'paid' : 'declined'}!`,
                 transaction: transactionResult
+            })
+        } catch (err) {
+            responseError(res, err)
+        }
+    }
+
+    async getUserOrderSummary (req: Request, res: Response) {
+        const userId = req.users?.id
+        try {
+            if (!userId) {
+                return res.status(401).json({
+                    message: 'Unauthorized!'
+                })
+            }
+
+            const transactions = await prisma.transaction.findMany({
+                where: {
+                    usersId: userId
+                },
+                include: {
+                    events: true
+                }
+            })
+
+            if (!transactions.length) {
+                return res.status(404).json({ message: "No transactions found" });
+            }
+
+            const groupedTransactions = {
+                success: transactions.filter(tx => tx.status === "paid"),
+                failed: transactions.filter(tx => tx.status === "cancelled" || tx.status === "declined")
+            };
+
+            return res.status(200).json({
+                status: 'OK',
+                transactions: groupedTransactions
             })
         } catch (err) {
             responseError(res, err)

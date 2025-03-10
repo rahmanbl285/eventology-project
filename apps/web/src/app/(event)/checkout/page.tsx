@@ -65,7 +65,6 @@ export default function CheckoutPage() {
         const timePassed = currentTime - timestamp;
 
         if (timePassed > SESSION_EXPIRATION_TIME) {
-          // Jika data sudah kedaluwarsa, hapus dari localStorage
           localStorage.removeItem('ticketStates');
           localStorage.removeItem('ticketStateTimestamp');
         } else {
@@ -80,14 +79,12 @@ export default function CheckoutPage() {
           }
         }
       } else {
-        // Simpan state hanya jika data berubah
         const newState = { eventId, ticket, ticketTotalPrice, slugEvent };
         localStorage.setItem('ticketStates', JSON.stringify(newState));
         localStorage.setItem('ticketStateTimestamp', currentTime.toString());
       }
     }
 
-    // Gunakan router.replace agar tidak menambah history baru
     if (!window.location.search) {
       router.replace(`/checkout?${queryParams}`);
     }
@@ -97,6 +94,7 @@ export default function CheckoutPage() {
     ticket,
     ticketTotalPrice,
     slugEvent,
+    queryParams,
     router,
     dispatch,
   ]);
@@ -153,7 +151,7 @@ export default function CheckoutPage() {
 
       if (res.status === 'OK' && Array.isArray(res.transactionIds)) {
         toast.success('Order successfully created!');
-        return res.transactionIds; // Kembalikan transactionIds
+        return res.transactionIds; 
       } else {
         toast.error(res.message || 'Failed to create order');
         return [];

@@ -112,7 +112,7 @@ export default function TabsEvent({
       prevTicketTypes.current = ticketTypes;
       prevTotalPrice.current = totalPrice;
     }
-  }, [ticketTypes, totalTickets, ticketPrice, totalPrice, eventsId, dispatch]);
+  }, [ticketTypes, totalTickets, ticketPrice, totalPrice, eventsId, dispatch, slug]);
 
   useEffect(() => {
     if (JSON.stringify(ticketTypes) !== JSON.stringify(prevTicketTypes.current)) {

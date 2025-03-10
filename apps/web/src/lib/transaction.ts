@@ -59,6 +59,17 @@ export const GetEventOrderSummary = async () => {
     return result
 }
 
+export const GetUserOrderSummary = async () => {
+    const res = await fetch (`${API_URL}orders/transaction-result`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    const result = await res.json()
+    return result
+}
+
 export const ConfirmOrder = async (transactionId: string, isConfirmed: boolean) => {
     const res = await fetch (`${API_URL}orders/confirm-order`, {
         method: 'POST',
