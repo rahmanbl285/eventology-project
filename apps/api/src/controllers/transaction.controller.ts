@@ -1,7 +1,7 @@
 import { responseError } from "@/helpers/resError";
 import prisma from "@/prisma";
-import { EventData, EventGroupBy, TransactionWithUser } from "@/types/transaction.types";
-import { Prisma } from "@prisma/client";
+import { EventData, EventGroupBy, TransactionWithEvent, TransactionWithUser } from "@/types/transaction.types";
+import { Prisma, Status } from "@prisma/client";
 import { Request, Response } from "express";
 
 export class TransactionController {
@@ -241,7 +241,7 @@ export class TransactionController {
                 })
             }
 
-            const transactions = await prisma.transaction.findMany({
+            const transactions: TransactionWithEvent[] = await prisma.transaction.findMany({
                 where: {
                     usersId: userId
                 },
@@ -255,8 +255,8 @@ export class TransactionController {
             }
 
             const groupedTransactions = {
-                success: transactions.filter(tx => tx.status === "paid"),
-                failed: transactions.filter(tx => tx.status === "cancelled" || tx.status === "declined")
+                success: transactions.filter((tx: TransactionWithEvent) => tx.status === "paid"),
+                failed: transactions.filter((tx: TransactionWithEvent) => tx.status === "cancelled" || tx.status === "declined")
             };
 
             return res.status(200).json({
@@ -307,7 +307,10 @@ export class TransactionController {
                     quantity: true,
                     grandTotal: true
                 }
-            });
+            }) 
+
+            console.log(paidTransactions);
+            
     
             const result = await prisma.transaction.findMany({
                 where: { 
@@ -323,10 +326,10 @@ export class TransactionController {
             const nonActiveEvents: EventData[] = [];
     
             events.forEach(event => {
-                const pending = transaction.filter(t => t.eventId === event.id).length;
-                const paid = paidTransactions.find(t => t.eventId === event.id)?._sum.quantity || 0;
-                const revenue = paidTransactions.find(t => t.eventId === event.id)?._sum.grandTotal || 0;
-    
+                const pending = transaction.filter((t: TransactionWithUser) => t.eventId === event.id).length;
+                const paid = paidTransactions.find((t: EventGroupBy) => t.eventId === event.id)?._sum.quantity || 0;
+                const revenue = paidTransactions.find((t: EventGroupBy) => t.eventId === event.id)?._sum.grandTotal || 0;
+                    
                 const eventData: EventData = {
                     id: event.id,
                     title: event.title,

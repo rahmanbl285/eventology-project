@@ -32,7 +32,13 @@ export type EventGroupBy = {
         grandTotal: number | null;
     };
 };
+  
+  
 
 export type TransactionWithUser = Prisma.TransactionGetPayload<{
     include: { users: true };
+  }>;
+
+export type TransactionWithEvent = Prisma.TransactionGetPayload<{
+    include: { events: true };
   }>;
